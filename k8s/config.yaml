@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: docling-nlp
+  labels:
+    app: docling-api
+data:
+  firebase-project-id: "your-firebase-project-id"
+  cors-origins: "http://localhost:3000,http://localhost:8080,https://your-frontend.com"
+  log-level: "INFO"
+  max-workers: "4"
+  rate-limit-per-minute: "100"
+  rate-limit-burst: "200"
+  max-file-size-mb: "50"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-secrets
+  namespace: docling-nlp
+  labels:
+    app: docling-api
+type: Opaque
+data:
+  # Base64 encoded JWT secret key (generate with: openssl rand -base64 64 | base64)
+  jwt-secret: ""
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-secret
+  namespace: docling-nlp
+  labels:
+    app: redis
+type: Opaque
+data:
+  # Base64 encoded Redis password (generate with: openssl rand -base64 32 | base64)
+  password: ""
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: firebase-secret
+  namespace: docling-nlp
+  labels:
+    app: docling-api
+type: Opaque
+data:
+  # Base64 encoded Firebase service account JSON
+  service-account-key: ""

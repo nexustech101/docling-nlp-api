@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: docling-nlp
+  labels:
+    name: docling-nlp
+    app: docling-nlp-api

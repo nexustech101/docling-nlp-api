@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow users to read/write their own API tokens
+    match /api_tokens/{tokenId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // Analytics collections - users can only read their own data
+    match /api_usage/{document} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.user_id;
+      allow update, delete: if false; // Only allow creation and reading
+    }
+    
+    match /document_processing/{document} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.user_id;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.user_id;
+      allow update, delete: if false; // Only allow creation and reading
+    }
+    
+    match /daily_stats/{document} {
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow write: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    match /document_stats/{document} {
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+      allow write: if request.auth != null && 
+        request.auth.uid == request.resource.data.user_id;
+    }
+    
+    // User profiles (optional for future use)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

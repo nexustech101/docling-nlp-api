@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docling-api
+  namespace: docling-nlp
+  labels:
+    app: docling-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: docling-api
+  template:
+    metadata:
+      labels:
+        app: docling-api
+    spec:
+      containers:
+      - name: docling-api
+        image: docling-nlp-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DEBUG
+          value: "false"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8000"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: jwt-secret
+        - name: FIREBASE_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: firebase-project-id
+        - name: FIREBASE_SERVICE_ACCOUNT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secret
+              key: service-account-key
+        - name: RATE_LIMIT_PER_MINUTE
+          value: "100"
+        - name: RATE_LIMIT_BURST
+          value: "200"
+        - name: MAX_FILE_SIZE_MB
+          value: "50"
+        - name: CORS_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: cors-origins
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: temp-storage
+          mountPath: /tmp
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+      imagePullPolicy: Always
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docling-api-service
+  namespace: docling-nlp
+  labels:
+    app: docling-api
+spec:
+  selector:
+    app: docling-api
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
