@@ -48,14 +48,15 @@ async def upload_document(
         )
 
         # Return appropriate response format
-        if dest_format == OutputFormat.HTML:
-            return HTMLResponse(content=result.content)
-        elif dest_format in [OutputFormat.TEXT, OutputFormat.MARKDOWN, OutputFormat.DOCTAGS]:
-            return PlainTextResponse(content=result.content)
-        elif dest_format == OutputFormat.JSON:
-            return JSONResponse(content=json.loads(result.content))
-        else:
-            return result
+        match dest_format:
+            case OutputFormat.HTML:
+                return HTMLResponse(content=result.content)
+            case [OutputFormat.TEXT, OutputFormat.MARKDOWN, OutputFormat.DOCTAGS]:
+                return PlainTextResponse(content=result.content)
+            case OutputFormat.JSON:
+                return JSONResponse(content=json.loads(result.content))
+            case _:
+                return result
 
     except DoclingAPIException as e:
         raise create_http_exception(e)
@@ -87,14 +88,15 @@ async def process_url(
         )
 
         # Return appropriate response format
-        if request.dest_format == OutputFormat.HTML:
-            return HTMLResponse(content=result.content)
-        elif request.dest_format in [OutputFormat.TEXT, OutputFormat.MARKDOWN, OutputFormat.DOCTAGS]:
-            return PlainTextResponse(content=result.content)
-        elif request.dest_format == OutputFormat.JSON:
-            return JSONResponse(content=json.loads(result.content))
-        else:
-            return result
+        match request.dest_format:
+            case OutputFormat.HTML:
+                return HTMLResponse(content=result.content)
+            case [OutputFormat.TEXT, OutputFormat.MARKDOWN, OutputFormat.DOCTAGS]:
+                return PlainTextResponse(content=result.content)
+            case OutputFormat.JSON:
+                return JSONResponse(content=json.loads(result.content))
+            case _:
+                return result
 
     except DoclingAPIException as e:
         raise create_http_exception(e)

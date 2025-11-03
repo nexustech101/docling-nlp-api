@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from re import match
 from typing import Optional, Dict, Any
 import time
 import json
@@ -168,19 +169,21 @@ class DoclingService:
     def _convert_to_format(self, doc, output_format: OutputFormat) -> str:
         """Convert DoclingDocument to desired output format."""
         try:
-            if output_format == OutputFormat.MARKDOWN:
-                return doc.export_to_markdown()
-            elif output_format == OutputFormat.HTML:
-                return doc.export_to_html()
-            elif output_format == OutputFormat.TEXT:
-                return doc.export_to_text()
-            elif output_format == OutputFormat.DOCTAGS:
-                return doc.export_to_doctags()
-            elif output_format == OutputFormat.JSON:
-                return json.dumps(self._create_nlp_structured_json(doc), indent=2)
-            else:
-                raise DocumentConversionError(
-                    f"Unsupported output format: {output_format}")
+            match output_format:
+                case OutputFormat.MARKDOWN:
+                    return doc.export_to_markdown()
+                case OutputFormat.HTML:
+                    return doc.export_to_html()
+                case OutputFormat.TEXT:
+                    return doc.export_to_text()
+                case OutputFormat.DOCTAGS:
+                    return doc.export_to_doctags()
+                case OutputFormat.JSON:
+                    return json.dumps(self._create_nlp_structured_json(doc), indent=2)
+                case _:
+                    raise DocumentConversionError(
+                        f"Unsupported output format: {output_format}")
+
         except Exception as e:
             raise DocumentConversionError(
                 f"Failed to convert to {output_format}: {str(e)}")
